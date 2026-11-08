@@ -1,0 +1,65 @@
+@startuml diseno
+skinparam classAttributeIconSize 0
+
+interface Mapa<K, V> {
+    + put(clave: K, valor: V): void
+    + get(clave: K): V
+    + size(): int
+}
+
+class MapaBST<K extends Comparable<K>, V> implements Mapa {
+    - bst: BST<K, V>
+    + put(clave: K, valor: V): void
+    + get(clave: K): V
+    + size(): int
+}
+
+class MapaRBBST<K extends Comparable<K>, V> implements Mapa {
+    - rbbst: RedBlackBST<K, V>
+    + put(clave: K, valor: V): void
+    + get(clave: K): V
+    + size(): int
+}
+
+class MapaSCH<K, V> implements Mapa {
+    - sch: SeparateChainingHashST<K, V>
+    + put(clave: K, valor: V): void
+    + get(clave: K): V
+    + size(): int
+}
+
+class MapaLPH<K, V> implements Mapa {
+    - lph: LinearProbingHashST<K, V>
+    + put(clave: K, valor: V): void
+    + get(clave: K): V
+    + size(): int
+}
+
+class Mensaje {
+    - id: int
+    - origen: String
+    - destino: String
+    + Mensaje(id: int, origen: String, destino: String)
+    + id(): int
+    + origen(): String
+    + destino(): String
+}
+
+class GeneradorTopologia <<Docente>> {
+    - filas: int
+    - columnas: int
+    - n: int
+    + GeneradorTopologia(filas: int, columnas: int)
+    + generar(semilla: long): Graph
+    + indice(fila: int, columna: int): int
+    + coordenadas(vertice: int): int[]
+    + identificador(vertice: int): String
+    + indice(identificador: String): int
+}
+
+note top of GeneradorTopologia
+  Clase docente provista.
+  No se modifica.
+end note
+
+@enduml
