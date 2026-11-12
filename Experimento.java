@@ -31,7 +31,7 @@ public class Experimento {
     }
     Simulador.Resultado[] resultados = new Simulador.Resultado[B];
     StopwatchCPU reloj = new StopwatchCPU();
-    for (int b=0; b<8; b++){
+    for (int b=0; b<B; b++){
       resultados[b] = lote[b].simular();
     }
     double tiempoLote = reloj.elapsedTime();
