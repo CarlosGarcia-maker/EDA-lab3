@@ -1,4 +1,4 @@
-import edu.pricneton.cs.algs4.StopwatchCPU;
+import edu.princeton.cs.algs4.StopwatchCPU;
 
 /**
 Experimento preliminar pra validar la integración de la simulación.
@@ -14,7 +14,7 @@ public class Experimento {
   long seedDemanda = 2000003L + 31L * n + r;
     System.out.println("Iniciando experimento preliminar con n = " + n);
     GeneradorTopologia topo = new GeneradorTopologia(filas, columnas);
-    Generador generador = new Generador(topom seedTopologia, seedDemanda);
+    Generador generador = new Generador(topo, seedTopologia, seedDemanda);
 
   Mapa<String,Integer>[] tablas = new Mapa[n];
     for (int i=0; i<n; i++){
@@ -26,7 +26,7 @@ public class Experimento {
     }
     int B = 16;
     Simulador.Ejecucion[] lote = new Simulador.Ejecucion[B];
-    for (int b=0; b<8; b++){
+    for (int b=0; b<B; b++){
       lote[b] = simulador.nuevaEjecucion();
     }
     Simulador.Resultado[] resultados = new Simulador.Resultado[B];
@@ -36,11 +36,11 @@ public class Experimento {
     }
     double tiempoLote = reloj.elapsedTime();
 
-  Simulador.Resultado res = resultado[0];
-    System.outprintln("Mensajes entregados : " + res.entregados + " (Esperado: " + (4*n) + ")");
-    System.outprintln("Transmisiones : " + res.transmisiones + " (Esperado: " + (16*n) + ")");
-    System.outprintln("Tiempo total lote : " + tiempoLote + " s (B=" + B + ")");
-    System.outprintln(Prueba preliminar finalizada");
+  Simulador.Resultado res = resultados[0];
+    System.out.println("Mensajes entregados : " + res.entregados + " (Esperado: " + (4*n) + ")");
+    System.out.println("Transmisiones : " + res.transmisiones + " (Esperado: " + (16*n) + ")");
+    System.out.println("Tiempo total lote : " + tiempoLote + " s (B=" + B + ")");
+    System.out.println("Prueba preliminar finalizada");
   }
 }
     
