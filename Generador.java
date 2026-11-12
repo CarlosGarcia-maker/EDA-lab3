@@ -20,7 +20,7 @@ public class Generador {
   @param semillaTpologia Semilla para la generacion del grafo.
   @param semillaDemanda Semilla para la selección de deestinos de los mensajes.
   */
-  public Generador(GeneradorTopologia topologia, long semillaTopologia, long demanda){
+  public Generador(GeneradorTopologia topologia, long semillaTopologia, long semillaDemanda){
     this.topologia = topologia;
     this.n = topologia.cantidadVertices();
 
@@ -42,13 +42,13 @@ public class Generador {
         }
       }
       if(candidatos.isEmpty()) {
-        throw new IllegalStateException("No se encontraron candidatos a 4 saltos para el origen: " + s);
+        throw new IllegalStateException("No se encontraron candidatos a 4 saltos para el origen: " + i);
       }
       demanda[i] = new ArrayList<>();
       for (int p =0; p<4; p++){
-        int a = azarDemanda.nextInt(candidatos.size());
-        int n = candidatos.get(a);
-        Mensaje m = new Mensaje(idMensaje, topologia.identificador(i), topologia.identificador(n));
+        int a = demandaRandom.nextInt(candidatos.size());
+        int d = candidatos.get(a);
+        Mensaje m = new Mensaje(idMensaje, topologia.identificador(i), topologia.identificador(d));
         demanda[i].add(m);
         idMensaje++;
       }
@@ -88,6 +88,6 @@ public class Generador {
   @param v Indice del vértice origen
   @return Lista de mensajes generados para el origen
   */
-  public List<Mensaje>[] demanda(int v) {
+  public List<Mensaje> demanda(int v) {
     return demanda[v];
   }
