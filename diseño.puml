@@ -1,65 +1,116 @@
-@startuml diseno
+@startuml
 skinparam classAttributeIconSize 0
 
 interface Mapa<K, V> {
-    + put(clave: K, valor: V): void
-    + get(clave: K): V
-    + size(): int
+  + put(clave: K, valor: V): void
+  + get(clave: K): V
+  + size(): int
 }
 
-class MapaBST<K extends Comparable<K>, V> implements Mapa {
-    - bst: BST<K, V>
-    + put(clave: K, valor: V): void
-    + get(clave: K): V
-    + size(): int
+class MapaBST<K extends Comparable<K>, V> {
+  - st: BST<K, V>
+  + put(clave: K, valor: V): void
+  + get(clave: K): V
+  + size(): int
 }
 
-class MapaRBBST<K extends Comparable<K>, V> implements Mapa {
-    - rbbst: RedBlackBST<K, V>
-    + put(clave: K, valor: V): void
-    + get(clave: K): V
-    + size(): int
+class MapaRBBST<K extends Comparable<K>, V> {
+  - st: RedBlackBST<K, V>
+  + put(clave: K, valor: V): void
+  + get(clave: K): V
+  + size(): int
 }
 
-class MapaSCH<K, V> implements Mapa {
-    - sch: SeparateChainingHashST<K, V>
-    + put(clave: K, valor: V): void
-    + get(clave: K): V
-    + size(): int
+class MapaSCH<K, V> {
+  - st: SeparateChainingHashST<K, V>
+  + put(clave: K, valor: V): void
+  + get(clave: K): V
+  + size(): int
 }
 
-class MapaLPH<K, V> implements Mapa {
-    - lph: LinearProbingHashST<K, V>
-    + put(clave: K, valor: V): void
-    + get(clave: K): V
-    + size(): int
+class MapaLPH<K, V> {
+  - st: LinearProbingHashST<K, V>
+  + put(clave: K, valor: V): void
+  + get(clave: K): V
+  + size(): int
 }
 
 class Mensaje {
-    - id: int
-    - origen: String
-    - destino: String
-    + Mensaje(id: int, origen: String, destino: String)
-    + id(): int
-    + origen(): String
-    + destino(): String
+  - id: int
+  - origen: String
+  - destino: String
+  + Mensaje(id: int, origen: String, destino: String)
+  + id(): int
+  + origen(): String
+  + destino(): String
 }
 
-class GeneradorTopologia <<Docente>> {
-    - filas: int
-    - columnas: int
-    - n: int
-    + GeneradorTopologia(filas: int, columnas: int)
-    + generar(semilla: long): Graph
-    + indice(fila: int, columna: int): int
-    + coordenadas(vertice: int): int[]
-    + identificador(vertice: int): String
-    + indice(identificador: String): int
+class GeneradorTopologia {
+  - filas: int
+  - columnas: int
+  + GeneradorTopologia(filas: int, columnas: int)
+  + cantidadVertices(): int
+  + generar(semilla: long): Graph
+  + identificador(v: int): String
 }
 
-note top of GeneradorTopologia
-  Clase docente provista.
-  No se modifica.
-end note
+class Generador {
+  - topologia: GeneradorTopologia
+  - grafo: Graph
+  - n: int
+  - bfs: BreadthFirstPaths[]
+  - demanda: List<Mensaje>[]
+  + Generador(topologia: GeneradorTopologia, semillaTopologia: long, semillaDemanda: long)
+  + topologia(): GeneradorTopologia
+  + grafo(): Graph
+  + n(): int
+  + bfs(v: int): BreadthFirstPaths
+  + demanda(v: int): List<Mensaje>
+}
 
+class Simulador {
+  - generador: Generador
+  - tablas: Mapa<String, Integer>[]
+  + Simulador(generador: Generador, tablas: Mapa<String, Integer>[])
+  - prepararTablas(): void
+  + nuevaEjecucion(): Ejecucion
+}
+
+class "Simulador.Ejecucion" as Ejecucion {
+  - filas: LinkedQueue<Mensaje>[]
+  - activos: LinkedQueue<Integer>
+  - enAgenda: boolean[]
+  + Ejecucion()
+  - agendar(v: int): void
+  + simular(): Resultado
+}
+
+class "Simulador.Resultado" as Resultado {
+  + entregados: int
+  + transmisiones: int
+  + periodos: int
+  + Resultado(entregados: int, transmisiones: int, periodos: int)
+}
+
+class Experimento {
+  + {static} main(args: String[]): void
+}
+
+Mapa <|.. MapaBST
+Mapa <|.. MapaRBBST
+Mapa <|.. MapaSCH
+Mapa <|.. MapaLPH
+
+Generador --> GeneradorTopologia : usa
+Generador o-- Mensaje : genera demanda
+Simulador --> Generador : consulta
+Simulador o-- Mapa : tablas[n]
+Simulador +-- Ejecucion : clase interna
+Simulador +-- Resultado : clase interna estatica
+Ejecucion ..> Mensaje : encola y rutea
+Ejecucion ..> Resultado : retorna
+Experimento ..> GeneradorTopologia : instancia
+Experimento ..> Generador : instancia
+Experimento ..> Simulador : ejecuta lotes
+Experimento ..> MapaBST : evalua
 @enduml
