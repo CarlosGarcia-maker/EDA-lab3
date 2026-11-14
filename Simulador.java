@@ -15,7 +15,7 @@ public class Simulador {
   @param generador Instancia con la topologia, grafo, BFS y demanda listos
   @param tablas Arreglo de n mapas instanciados (vacios) correspondientes a la implementacion a evaluar
   */
-public Simulador(Generador generador, Mapa<String, Integer[] tablas) {
+public Simulador(Generador generador, Mapa<String, Integer>[] tablas) {
   this.generador = generador;
   this.tablas = tablas;
   prepararTablas();
