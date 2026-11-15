@@ -112,5 +112,5 @@ Ejecucion ..> Resultado : retorna
 Experimento ..> GeneradorTopologia : instancia
 Experimento ..> Generador : instancia
 Experimento ..> Simulador : ejecuta lotes
-Experimento ..> MapaBST : evalua
+Experimento ..> Mapa : evalua
 @enduml
