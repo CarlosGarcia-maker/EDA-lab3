@@ -5,6 +5,11 @@
  */
 public class PruebasRuteo {
 
+    /**
+     * Punto de entrada para ejecutar todas las pruebas de ruteo y equivalencia.
+     *
+     * @param args argumentos de linea de comandos (no utilizados)
+     */
     public static void main(String[] args) {
         System.out.println("=== INICIANDO PRUEBAS DE RUTEO Y EQUIVALENCIA ===");
 
@@ -27,25 +32,27 @@ public class PruebasRuteo {
         long seedTopologia = 128L;
         long seedDemanda = 2003971L;
 
+        // 1. Construimos una misma topologia y demanda base para los 4 escenarios
         GeneradorTopologia topo = new GeneradorTopologia(filas, columnas);
         Generador generador = new Generador(topo, seedTopologia, seedDemanda);
 
+        // 2. Ejecutamos la simulacion completa con cada estructura de datos
         Simulador.Resultado resBST = ejecutarConMapa(generador, n, "BST");
         Simulador.Resultado resRBBST = ejecutarConMapa(generador, n, "RBBST");
         Simulador.Resultado resSCH = ejecutarConMapa(generador, n, "SCH");
         Simulador.Resultado resLPH = ejecutarConMapa(generador, n, "LPH");
 
-        // Comparamos RBBST contra BST
+        // 3. Comparamos RBBST contra BST
         verificar(resBST.entregados == resRBBST.entregados, "Entregados distintos entre BST y RBBST");
         verificar(resBST.transmisiones == resRBBST.transmisiones, "Transmisiones distintas entre BST y RBBST");
         verificar(resBST.periodos == resRBBST.periodos, "Periodos distintos entre BST y RBBST");
 
-        // Comparamos SCH contra BST
+        // 4. Comparamos SCH contra BST
         verificar(resBST.entregados == resSCH.entregados, "Entregados distintos entre BST y SCH");
         verificar(resBST.transmisiones == resSCH.transmisiones, "Transmisiones distintas entre BST y SCH");
         verificar(resBST.periodos == resSCH.periodos, "Periodos distintos entre BST y SCH");
 
-        // Comparamos LPH contra BST
+        // 5. Comparamos LPH contra BST
         verificar(resBST.entregados == resLPH.entregados, "Entregados distintos entre BST y LPH");
         verificar(resBST.transmisiones == resLPH.transmisiones, "Transmisiones distintas entre BST y LPH");
         verificar(resBST.periodos == resLPH.periodos, "Periodos distintos entre BST y LPH");
@@ -70,9 +77,14 @@ public class PruebasRuteo {
 
         Simulador.Resultado res = ejecutarConMapa(generador, n, "RBBST");
 
+        // 1. Cada nodo genera 4 mensajes y todos deben llegar a destino (4*n)
         verificar(res.entregados == 4 * n, "Se esperaban " + (4 * n) + " entregados, pero hubo " + res.entregados);
+
+        // 2. Cada mensaje recorre exactamente 4 saltos (4 * 4*n = 16*n transmisiones)
         verificar(res.transmisiones == 16 * n, "Se esperaban " + (16 * n) + " transmisiones, pero hubo " + res.transmisiones);
-        verificar(res.periodos > 0, "La cantidad de periodos debe ser mayor a 0");
+
+        // 3. Recorrer 4 saltos requiere al menos 4 periodos de tiempo
+        verificar(res.periodos >= 4, "La cantidad de periodos debe ser al menos 4");
 
         System.out.println("[OK] Prueba 2: Oraculo matematico cumplido (4*n entregas y 16*n transmisiones).");
     }
@@ -88,11 +100,17 @@ public class PruebasRuteo {
 
         GeneradorTopologia topo = new GeneradorTopologia(filas, columnas);
         Generador generador = new Generador(topo, 10L, 20L);
-        Simulador simulador = new Simulador(generador, crearArregloMapas(n, "LPH"));
+        Mapa<String, Integer>[] tablas = crearArregloMapas(n, "LPH");
+        Simulador simulador = new Simulador(generador, tablas);
 
+        // 1. Ejecutamos dos corridas independientes sobre la misma instancia de Simulador
         Simulador.Resultado corrida1 = simulador.nuevaEjecucion().simular();
         Simulador.Resultado corrida2 = simulador.nuevaEjecucion().simular();
 
+        // 2. Verificamos que las tablas de ruteo efectivamente almacenaron rutas
+        verificar(tablas[0].size() > 0, "Las tablas de ruteo deberian contener entradas tras simular");
+
+        // 3. Verificamos determinismo e independencia entre ambas corridas
         verificar(corrida1.entregados == corrida2.entregados, "Fallo de determinismo en entregados");
         verificar(corrida1.transmisiones == corrida2.transmisiones, "Fallo de determinismo en transmisiones");
         verificar(corrida1.periodos == corrida2.periodos, "Fallo de determinismo en periodos");
@@ -118,14 +136,27 @@ public class PruebasRuteo {
         System.out.println("[OK] Prueba 4: Validacion de excepcion en topologia sin destinos a distancia 4.");
     }
 
-    // --- Metodos auxiliares ---
-
+    /**
+     * Crea un arreglo de mapas del tipo solicitado y ejecuta una simulacion completa.
+     *
+     * @param generador instancia con la topologia y demanda precalculadas
+     * @param n cantidad de estaciones de la red
+     * @param tipoMapa identificador del adaptador ("BST", "RBBST", "SCH" o "LPH")
+     * @return resultado metrico de la simulacion ejecutada
+     */
     private static Simulador.Resultado ejecutarConMapa(Generador generador, int n, String tipoMapa) {
         Mapa<String, Integer>[] tablas = crearArregloMapas(n, tipoMapa);
         Simulador simulador = new Simulador(generador, tablas);
         return simulador.nuevaEjecucion().simular();
     }
 
+    /**
+     * Instancia un arreglo de n tablas de simbolos vacias del adaptador indicado.
+     *
+     * @param n cantidad de mapas a crear (uno por estacion)
+     * @param tipoMapa nombre corto del adaptador ("BST", "RBBST", "SCH" o "LPH")
+     * @return arreglo de n implementaciones de Mapa
+     */
     @SuppressWarnings("unchecked")
     private static Mapa<String, Integer>[] crearArregloMapas(int n, String tipoMapa) {
         Mapa<String, Integer>[] tablas = (Mapa<String, Integer>[]) new Mapa[n];
@@ -150,6 +181,12 @@ public class PruebasRuteo {
         return tablas;
     }
 
+    /**
+     * Evalua una condicion logica y lanza AssertionError si no se cumple.
+     *
+     * @param condicion expresion booleana esperada como verdadera
+     * @param mensajeError descripcion del fallo en caso de incumplimiento
+     */
     private static void verificar(boolean condicion, String mensajeError) {
         if (!condicion) {
             throw new AssertionError("FALLO EN PRUEBA: " + mensajeError);
