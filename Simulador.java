@@ -6,37 +6,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
-Prepara las tablas de ruteo y administra las ejecuciones de la red
-*/
+ * Prepara las tablas de ruteo y administra las ejecuciones de la red.
+ */
 public class Simulador {
   private Generador generador;
   private Mapa<String, Integer>[] tablas;
 
-    /**
-    Construye el simulador y prepara las tablas para una alternativa de Mapa.
-    @param generador Instancia con la topologia, grafo, BFS y demanda listos
-    @param tablas Arreglo de n mapas instanciados (vacios) correspondientes a la implementacion a evaluar
-    */
+  /**
+   * Construye el simulador y prepara las tablas para una alternativa de Mapa
+   * utilizando el orden por defecto de los vertices (0 .. n-1).
+   *
+   * @param generador Instancia con la topologia, grafo, BFS y demanda listos
+   * @param tablas Arreglo de n mapas instanciados (vacios) correspondientes a la implementacion a evaluar
+   */
   public Simulador(Generador generador, Mapa<String, Integer>[] tablas) {
-    this.generador = generador;
-    this.tablas = tablas;
-    prepararTablas();
+    this(generador, tablas, ordenPorDefecto(generador));
   }
-    /**
-    Llena las tablas de ruteo eligiendo el vecino que reduce la distancia al destino en uno.
-    Si hay empate, elige el vecino de menor indice.
-    */
-    
-    /**
-     * Construye el simulador y prepara las tablas insertando las claves en el orden indicado.
-     * @param generador Instancia con la topologia, grafo, BFS y demanda listos
-     * @param tablas Arreglo de n mapas instanciados (vacios) correspondientes a la implementacion a evaluar
-     * @param ordenClaves Lista con los n identificadores en el orden de insercion deseado
-     */
-    
 
-
-  
+  /**
+   * Construye el simulador y prepara las tablas insertando las claves en el orden indicado.
+   *
+   * @param generador Instancia con la topologia, grafo, BFS y demanda listos
+   * @param tablas Arreglo de n mapas instanciados (vacios) correspondientes a la implementacion a evaluar
+   * @param ordenClaves Lista con los n identificadores en el orden de insercion deseado
+   */
   public Simulador(Generador generador, Mapa<String, Integer>[] tablas, List<String> ordenClaves) {
     if (generador == null || tablas == null || ordenClaves == null) {
       throw new IllegalArgumentException("Los argumentos del simulador no pueden ser nulos.");
@@ -62,89 +55,87 @@ public class Simulador {
     return lista;
   }
 
-    /**
-     * Llena las tablas de ruteo eligiendo el vecino que reduce la distancia al destino en uno.
-     * Si hay empate, elige el vecino de menor indice.
-     * @param ordenClaves Lista de identificadores en el orden en que se insertaran en cada tabla
-     */
-
-  private void prepararTablas() {
+  /**
+   * Llena las tablas de ruteo eligiendo el vecino que reduce la distancia al destino en uno.
+   * Si hay empate, elige el vecino de menor indice.
+   *
+   * @param ordenClaves Lista de identificadores en el orden en que se insertaran en cada tabla
+   */
+  private void prepararTablas(List<String> ordenClaves) {
     int n = generador.n();
     Graph grafo = generador.grafo();
     GeneradorTopologia topo = generador.topologia();
-    for (int i = 0; i<n; i++){
-      for (int j = 0; j<n; j++){
-        if ( i!=j){
+    for (int i = 0; i < n; i++) {
+      String idOrigen = topo.identificador(i);
+      for (String idDestino : ordenClaves) {
+        if (!idDestino.equals(idOrigen)) {
+          int j = topo.indice(idDestino);
           BreadthFirstPaths bfsJ = generador.bfs(j);
           int distanciaBuscada = bfsJ.distTo(i) - 1;
           int mejorVecino = -1;
-          for (int w : grafo.adj(i)){
-            if (bfsJ.distTo(w) == distanciaBuscada){
-              if (mejorVecino == -1 || w < mejorVecino){
+          for (int w : grafo.adj(i)) {
+            if (bfsJ.distTo(w) == distanciaBuscada) {
+              if (mejorVecino == -1 || w < mejorVecino) {
                 mejorVecino = w;
               }
             }
           }
-          if (mejorVecino != -1){
-            tablas[i].put(topo.identificador(j), mejorVecino);
+          if (mejorVecino != -1) {
+            tablas[i].put(idDestino, mejorVecino);
           }
         }
       }
     }
   }
-    /**
-    Crea y retorna una nueva ejecucion con estado independiente.
-    @return Una intancia de Ejecucion lista para simular
-    */
+
+  /**
+   * Crea y retorna una nueva ejecucion con estado independiente.
+   *
+   * @return Una instancia de Ejecucion lista para simular
+   */
   public Ejecucion nuevaEjecucion() {
     return new Ejecucion();
   }
-    /**
-    Clase anidada para encapsular los datos de retorno de la simulacion
-    */
+
+  /**
+   * Clase anidada para encapsular los datos de retorno de la simulacion.
+   */
   public static class Resultado {
     public int entregados;
     public int transmisiones;
     public int periodos;
-    
-    public Resultado( int entregados, int transmisiones, int periodos){
+
+    public Resultado(int entregados, int transmisiones, int periodos) {
       this.entregados = entregados;
       this.transmisiones = transmisiones;
       this.periodos = periodos;
     }
   }
-  
-    /**
-     * Representa el estado aislado de una ejecucion unica, compartiendo las tablas del Simulador.
-     */
 
-  public class Ejecucion{
+  /**
+   * Representa el estado aislado de una ejecucion unica, compartiendo las tablas del Simulador.
+   */
+  public class Ejecucion {
     private LinkedQueue<Mensaje>[] filas;
     private LinkedQueue<Integer> activos;
     private boolean[] enAgenda;
 
-    public Ejecucion(){
+    @SuppressWarnings("unchecked")
+    public Ejecucion() {
       int n = generador.n();
       this.filas = (LinkedQueue<Mensaje>[]) new LinkedQueue[n];
-      for (int i = 0; i<n; i++){
+      for (int i = 0; i < n; i++) {
         filas[i] = new LinkedQueue<Mensaje>();
       }
       this.activos = new LinkedQueue<Integer>();
       this.enAgenda = new boolean[n];
     }
 
-    private void agendar(int v){
-      if (!enAgenda[v]){
-        activos.enqueue(v);
-        enAgenda[v] = true;
-      }
-    }
-
-  
-        /**
-         * Operacion auxiliar para agregar un vertice a la cola de activos sin duplicarlo.
-         * @param v Indice del vertice a agendar
-         */
+    /**
+     * Operacion auxiliar para agregar un vertice a la cola de activos sin duplicarlo.
+     *
+     * @param v Indice del vertice a agendar
+     */
     private void agendar(int v) {
       if (!enAgenda[v]) {
         activos.enqueue(v);
@@ -152,10 +143,11 @@ public class Simulador {
       }
     }
 
-        /**
-         * Verifica si todas las filas de mensajes de los vertices estan vacias.
-         * @return true si ninguna estacion tiene mensajes pendientes; false en caso contrario
-         */
+    /**
+     * Verifica si todas las filas de mensajes de los vertices estan vacias.
+     *
+     * @return true si ninguna estacion tiene mensajes pendientes; false en caso contrario
+     */
     public boolean filasVacias() {
       for (int i = 0; i < filas.length; i++) {
         if (!filas[i].isEmpty()) {
@@ -165,10 +157,11 @@ public class Simulador {
       return true;
     }
 
-        /**
-         * Ejecuta el ruteo completo de los mensajes hasta que la red quede inactiva.
-         * @return Objeto Resultado con los contadores finales
-         */
+    /**
+     * Ejecuta el ruteo completo de los mensajes hasta que la red quede inactiva.
+     *
+     * @return Objeto Resultado con los contadores finales
+     */
     public Resultado simular() {
       int n = generador.n();
       GeneradorTopologia topo = generador.topologia();

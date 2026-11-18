@@ -7,6 +7,14 @@ interface Mapa<K, V> {
   + size(): int
 }
 
+note right of Mapa
+  **Contrato Mapa<K, V>:**
+  - Pre: clave != null y valor != null (sino IllegalArgumentException).
+  - Post: igualdad por contenido (.equals); si clave existe,
+    sobrescribe valor sin incrementar size().
+  - Post: get(clave) retorna null si la clave no existe.
+end note
+
 class MapaBST<K extends Comparable<K>, V> {
   - st: BST<K, V>
   + put(clave: K, valor: V): void
@@ -45,6 +53,12 @@ class Mensaje {
   + destino(): String
 }
 
+note right of Mensaje
+  **Contrato Mensaje (Inmutable):**
+  - Pre: origen != null y destino != null (sino IllegalArgumentException).
+  - Inv: atributos finales sin mutadores; identidad logica por id.
+end note
+
 class GeneradorTopologia {
   - filas: int
   - columnas: int
@@ -68,13 +82,30 @@ class Generador {
   + demanda(v: int): List<Mensaje>
 }
 
+note right of Generador
+  **Contrato Generador:**
+  - Pre: topologia != null; deben existir destinos a distancia 4
+    para cada vertice (sino lanza IllegalStateException).
+  - Post: determinista segun semillas; genera exactamente 4 mensajes
+    por vertice hacia destinos con distTo(d) == 4.
+end note
+
 class Simulador {
   - generador: Generador
   - tablas: Mapa<String, Integer>[]
   + Simulador(generador: Generador, tablas: Mapa<String, Integer>[])
-  - prepararTablas(): void
+  + Simulador(generador: Generador, tablas: Mapa<String, Integer>[], ordenClaves: List<String>)
+  - {static} ordenPorDefecto(generador: Generador): List<String>
+  - prepararTablas(ordenClaves: List<String>): void
   + nuevaEjecucion(): Ejecucion
 }
+
+note right of Simulador
+  **Contrato Simulador:**
+  - Pre: tablas.length == n y ordenClaves.size() == n.
+  - Post: cada tabla[i] almacena n-1 destinos con el vecino w
+    que reduce distTo en 1 (desempate por menor indice).
+end note
 
 class "Simulador.Ejecucion" as Ejecucion {
   - filas: LinkedQueue<Mensaje>[]
@@ -82,8 +113,16 @@ class "Simulador.Ejecucion" as Ejecucion {
   - enAgenda: boolean[]
   + Ejecucion()
   - agendar(v: int): void
+  + filasVacias(): boolean
   + simular(): Resultado
 }
+
+note right of Ejecucion
+  **Contrato Ejecucion (Estado aislado):**
+  - Inv: enAgenda[v] evita duplicados en cola activos;
+    maximo 1 transmision por vertice activo en cada periodo.
+  - Post: al terminar, activos.isEmpty() y filasVacias() == true.
+end note
 
 class "Simulador.Resultado" as Resultado {
   + entregados: int
