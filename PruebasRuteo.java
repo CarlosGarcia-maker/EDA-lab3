@@ -3,7 +3,7 @@ import edu.princeton.cs.algs4.Graph;
 import java.util.List;
 
 /**
- * Suite de pruebas de ruteo y equivalencia (Rol A - Semana 2).
+ * Suite de pruebas de ruteo y equivalencia.
  * Verifica la demanda, validez de tablas de ruteo, invariantes de agenda,
  * vaciado de filas y equivalencia funcional entre los cuatro adaptadores de Mapa.
  */
