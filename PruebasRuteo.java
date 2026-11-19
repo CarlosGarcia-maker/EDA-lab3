@@ -11,8 +11,6 @@ public class PruebasRuteo {
 
     /**
      * Punto de entrada para ejecutar todas las pruebas de ruteo y equivalencia.
-     *
-     * @param args argumentos de linea de comandos (no utilizados)
      */
     public static void main(String[] args) {
         System.out.println("=== INICIANDO PRUEBAS DE RUTEO Y EQUIVALENCIA ===");
